@@ -1,0 +1,10 @@
+services:
+  nextjs:
+    build: .
+    container_name: mcp-fe
+    ports:
+      - 3000:3000
+    volumes:
+      - ./mcp-code-challenge:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run dev
