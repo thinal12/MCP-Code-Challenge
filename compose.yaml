@@ -1,10 +1,28 @@
 services:
-  nextjs:
-    build: .
-    container_name: mcp-fe
+  server:
+    build:
+      context: ./mcp-server
+      dockerfile: ../Dockerfile
+    container_name: mcp_server
     ports:
-      - 3000:3000
+      - "3001:3001"
+    volumes:
+      - ./mcp-server:/usr/src/app
+    environment:
+      - NODE_ENV=development
+    command: sh -c "npm install && npm start"
+
+  frontend:
+    build:
+      context: ./mcp-code-challenge
+      dockerfile: ../Dockerfile
+    container_name: mcp_frontend
+    ports:
+      - "3000:3000"
     volumes:
       - ./mcp-code-challenge:/usr/src/app
-      - /usr/src/app/node_modules
-    command: npm run dev
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - server
+    command: sh -c "npm install && npm run dev"
