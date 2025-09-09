@@ -3,44 +3,61 @@ import bodyParser from "body-parser";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { ResumeInfo } from "./tools/ResumeInfo.js";
+import { createServer } from "http"; 
+import cors from "cors";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 dotenv.config();
 const app = express();
+app.use(cors());
+const server = createServer(app);
 app.use(bodyParser.json());
+
+const genAI = new GoogleGenerativeAI("AIzaSyD4DizdDhcDo86Ezfeld4no8rcfaViEjZI");
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 let resumeText = "";
 
 async function loadResume() {
   if (!resumeText) {
     try {
-      
-      resumeText = ResumeInfo();
-      console.log("✅ Resume loaded successfully");
-    } catch (err) {
-      console.error("❌ Failed to load resume:", err);
+      resumeText = await ResumeInfo();
+    } catch (error) {
+      console.error(error);
     }
   }
   return resumeText;
 }
 
 app.post("/api/resume_info", async (req, res) => {
-  const { question } = req.body;
-  const text = await loadResume();
+  try {
+    const { question } = req.body;
+    const text = await loadResume();
 
-  let answer = "I couldn’t find an answer in the resume.";
+    const prompt = `
+      Answer the user's question using only the information in this resume.
 
-  if (question.toLowerCase().includes("last position")) {
-    const match = text.match(/([^\n]*?(?:Manager|Engineer|Developer|Intern)[^\n]*)/i);
-    if (match) {
-      answer = match[0];
-    }
+      Resume:
+      ${text}
+
+      Question:
+      ${question}
+          `;
+
+    const result = await model.generateContent(prompt);
+    const answer = result.response.text();
+
+    res.json({ answer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: err.message });
   }
-
-  res.json({ answer });
 });
 
 app.post("/api/send_email", async (req, res) => {
   const { recipient, subject, body } = req.body;
+
+  console.log(process.env.EMAIL_USER + " " + process.env.EMAIL_PASS)
 
   try {
     let transporter = nodemailer.createTransport({
@@ -60,12 +77,13 @@ app.post("/api/send_email", async (req, res) => {
 
     res.json({ status: "sent", recipient });
   } catch (error) {
-    console.error("Email send failed:", error);
+    console.error(error);
     res.status(500).json({ status: "error", error: error.message });
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+const PORT = 3001;
+
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

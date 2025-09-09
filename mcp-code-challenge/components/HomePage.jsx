@@ -1,39 +1,44 @@
+"use client";
+
 import { useState } from "react";
 
-export default function Home() {
-  const [question, setQuestion] = useState<string>("");
-  const [answer, setAnswer] = useState<string>("");
-  const [email, setEmail] = useState<{ to: string; subject: string; body: string }>({
+export default function HomePage() {
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [email, setEmail] = useState({
     to: "",
     subject: "",
     body: "",
   });
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState("");
 
   async function handleAsk() {
     try {
-      const res = await fetch("/api/resume", {
+      debugger;
+      console.log(question);
+      const res = await fetch("http://localhost:3001/api/resume_info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
       });
       const data = await res.json();
       setAnswer(data.answer ?? "No answer received");
-    } catch (err: any) {
-      setAnswer("Error: " + err.message);
+    } catch (error) {
+      console.log(error)
+      setAnswer("Error: " + error.message);
     }
   }
 
   async function handleEmail() {
     try {
-      const res = await fetch("/api/sendEmmail", {
+      const res = await fetch("http://localhost:3001/api/send_email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(email),
       });
       const data = await res.json();
       setStatus(data.message ?? "Email sent!");
-    } catch (err: any) {
+    } catch (err) {
       setStatus("Error: " + err.message);
     }
   }
