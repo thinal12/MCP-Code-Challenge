@@ -55,27 +55,28 @@ app.post("/api/resume_info", async (req, res) => {
 });
 
 app.post("/api/send_email", async (req, res) => {
-  const { recipient, subject, body } = req.body;
-
-  console.log(process.env.EMAIL_USER + " " + process.env.EMAIL_PASS)
+  console.log(req.body);
+  const { to, subject, body } = req.body;
 
   try {
     let transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.resend.com",
+      port: 587,
+      secure: false,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
+        user: "resend",
+        pass: "re_T1G2m3fx_V3ZSnpfNArdw4LW7bdYodJ3F",
+      },
     });
 
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: recipient,
-      subject,
-      text: body
+      from: "onboarding@resend.dev",
+      to: to,
+      subject: subject,
+      text: body,
     });
 
-    res.json({ status: "sent", recipient });
+    res.json({ status: "sent", to});
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: "error", error: error.message });
