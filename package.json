@@ -3,6 +3,6 @@
     "i": "npm install --prefix mcp-server && npm install --prefix ",
     "dev": "npm run dev --prefix mcp-server && npm run dev --prefix mcp-code-challenge",
     "server": "cd mcp-server && npm i && npm run dev",
-    "frontend": "cd mcp-code-challenge && npm run dev"
+    "frontend": "cd mcp-code-challenge && npm i && npm run dev"
   }
 }
