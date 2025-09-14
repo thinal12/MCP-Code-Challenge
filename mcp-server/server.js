@@ -1,11 +1,11 @@
 import express from "express";
 import bodyParser from "body-parser";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { ResumeInfo } from "./tools/ResumeInfo.js";
-import { createServer } from "http"; 
+import { createServer } from "http";
 import cors from "cors";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { SendEmail } from "./tools/SendEmail.js";
 
 dotenv.config();
 const app = express();
@@ -13,7 +13,7 @@ app.use(cors());
 const server = createServer(app);
 app.use(bodyParser.json());
 
-const genAI = new GoogleGenerativeAI("AIzaSyD4DizdDhcDo86Ezfeld4no8rcfaViEjZI");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 let resumeText = "";
@@ -42,7 +42,7 @@ app.post("/api/resume_info", async (req, res) => {
 
       Question:
       ${question}
-          `;
+    `;
 
     const result = await model.generateContent(prompt);
     const answer = result.response.text();
@@ -50,7 +50,7 @@ app.post("/api/resume_info", async (req, res) => {
     res.json({ answer });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -59,31 +59,15 @@ app.post("/api/send_email", async (req, res) => {
   const { to, subject, body } = req.body;
 
   try {
-    let transporter = nodemailer.createTransport({
-      host: "smtp.resend.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: "resend",
-        pass: "re_T1G2m3fx_V3ZSnpfNArdw4LW7bdYodJ3F",
-      },
-    });
-
-    await transporter.sendMail({
-      from: "onboarding@resend.dev",
-      to: to,
-      subject: subject,
-      text: body,
-    });
-
-    res.json({ status: "sent", to});
+    await SendEmail(to, subject, body);
+    res.json({ status: "sent", to });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: "error", error: error.message });
   }
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

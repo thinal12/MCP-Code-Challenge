@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function HomePage() {
   const [question, setQuestion] = useState("");
@@ -10,7 +11,6 @@ export default function HomePage() {
     subject: "",
     body: "",
   });
-  const [status, setStatus] = useState("");
 
   async function handleAsk() {
     try {
@@ -21,8 +21,10 @@ export default function HomePage() {
       });
       const data = await res.json();
       setAnswer(data.answer ?? "No answer received");
+      toast.success("Answer received!");
     } catch (error) {
       setAnswer("Error: " + error.message);
+      toast.error("Failed to fetch answer");
     }
   }
 
@@ -34,11 +36,20 @@ export default function HomePage() {
         body: JSON.stringify(email),
       });
       const data = await res.json();
-      setStatus(data.message ?? "Email sent!");
+      toast.success(data.message ?? "Email sent!");
     } catch (err) {
-      setStatus("Error: " + err.message);
+      toast.error("Error: " + err.message);
     }
   }
+
+  const fieldStyle = {
+    display: "block",
+    width: "100%",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    marginBottom: 10,
+    padding: "8px",
+  };
 
   return (
     <div
@@ -47,12 +58,12 @@ export default function HomePage() {
         fontFamily: "Arial",
         background: "white",
         minHeight: "100vh",
-        color: "black",       
+        color: "black",
       }}
     >
-    
+      <Toaster position="top-center" />
+
       <div style={{ display: "flex", gap: "40px" }}>
-        
         <section
           style={{
             flex: 1,
@@ -69,14 +80,34 @@ export default function HomePage() {
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Ask any question"
-            style={{ width: "100%", border: "1px solid #ddd", marginBottom: 10 }}
+            style={fieldStyle}
           />
-          <button onClick={handleAsk} style={{ marginBottom: 10 }}>
+          <button
+            onClick={handleAsk}
+            style={{
+              marginBottom: 10,
+              borderRadius: "8px",
+              backgroundColor: "black",
+              color: "white",
+              padding: "8px 12px",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
             Ask
           </button>
-          <p>
-            <b>Answer:</b> {answer}
-          </p>
+          <label style={{ display: "block", marginBottom: 5 }}>
+            <b>Answer:</b>
+          </label>
+          <textarea
+            value={answer}
+            readOnly
+            style={{
+              ...fieldStyle,
+              height: "100px",
+              resize: "none",
+            }}
+          />
         </section>
 
         <section
@@ -90,36 +121,44 @@ export default function HomePage() {
           }}
         >
           <h2>Send Email</h2>
+
+          <label style={{ display: "block", marginBottom: 5 }}>Recipient</label>
           <input
             type="email"
-            placeholder="Recipient"
             value={email.to}
             onChange={(e) => setEmail({ ...email, to: e.target.value })}
-            style={{ display: "block", width: "100%", border: "1px solid #ddd", marginBottom: 10 }}
+            style={fieldStyle}
           />
+
+          <label style={{ display: "block", marginBottom: 5 }}>Subject</label>
           <input
             type="text"
-            placeholder="Subject"
             value={email.subject}
             onChange={(e) => setEmail({ ...email, subject: e.target.value })}
-            style={{ display: "block", width: "100%", border: "1px solid #ddd", marginBottom: 10 }}
+            style={fieldStyle}
           />
+
+          <label style={{ display: "block", marginBottom: 5 }}>Body</label>
           <textarea
-            placeholder="Body"
             value={email.body}
             onChange={(e) => setEmail({ ...email, body: e.target.value })}
-            style={{
-              display: "block",
-              width: "100%",
-              height: "100px",
-              marginBottom: 10,
-              border: "1px solid #ddd"
-            }}
+            style={{ ...fieldStyle, height: "100px" }}
           />
-          <button onClick={handleEmail} style={{ marginBottom: 10 }}>
+
+          <button
+            onClick={handleEmail}
+            style={{
+              marginBottom: 10,
+              borderRadius: "8px",
+              backgroundColor: "black",
+              color: "white",
+              padding: "8px 12px",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
             Send Email
           </button>
-          <p>{status}</p>
         </section>
       </div>
     </div>
