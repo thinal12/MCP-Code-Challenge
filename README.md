@@ -43,13 +43,5 @@ To start the next.js frontend:
 
 - The frontend will run on [http://localhost:3000](http://localhost:3000).
 
-## Usage
-
-- The backend server will run on [http://localhost:3001](http://localhost:3001).
-- The frontend will run on [http://localhost:3000](http://localhost:3000).
-- These commands will also install all the dependencies needed.
-
----
-
-**Scripts referenced:**
-- [package.json](package.json) root scripts: `server`, `frontend`.
+These commands will also install all dependencies.
+- 
